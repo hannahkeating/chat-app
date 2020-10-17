@@ -22,7 +22,7 @@ export default class Start extends React.Component {
   render() {
     return (
       <ImageBackground
-        source={require("../assets/Background-Image.png")}
+        source={require("../assets/Background_Image.png")}
         style={styles.imageBkg}
       >
         <Text style={styles.title}>Catchat</Text>
