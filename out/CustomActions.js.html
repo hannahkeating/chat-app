@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>JSDoc: Source: CustomActions.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="styles/prettify-tomorrow.css"
+    />
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css" />
+  </head>
+
+  <body>
+    <div id="main">
+      <h1 class="page-title">Source: CustomActions.js</h1>
+
+      <section>
+        <article>
+          <pre
+            class="prettyprint source linenums"
+          ><code>/* eslint-disable linebreak-style */
+/* eslint-disable no-use-before-define */
+/* eslint-disable react/jsx-boolean-value */
+/* eslint-disable react/jsx-filename-extension */
+/* eslint-disable consistent-return */
+/* eslint-disable react/prop-types */
+/* eslint-disable react/destructuring-assignment */
+/* eslint-disable no-console */
+// Importing dependencies
+import React from 'react';
+import PropTypes from 'prop-types';
+import {
+  StyleSheet, Text, TouchableOpacity, View,
+} from 'react-native';
+// For asking the user for permission
+import * as Permissions from 'expo-permissions';
+// For accessing the device's camera/camera roll
+import * as ImagePicker from 'expo-image-picker';
+// For accessing the user's location
+import * as Location from 'expo-location';
+
+// Storage for images
+const firebase = require('firebase');
+require('firebase/firestore');
+
+/**
+* @class CustomActions
+* @requires react
+* @requires prop-types
+* @requires react-native
+* @requires expo-permissions
+* @requires expo-image-picker
+* @requires expo-location
+* @requires firebase
+* @requires firestore
+*/
+
+// Creating the '+' button on the bottom for more actions
+export default class CustomActions extends React.Component {
+  /**
+  * For choosing a picture from the device's library (camera roll)
+  * Asks user for permission
+  * @async
+  * @function pickImage
+  */
+
+  pickImage = async () => {
+    const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+    // Only grant access if user accepts
+    try {
+      if (status === 'granted') {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: 'Images',
+        }).catch((error) => console.log(error));
+        // Checks if user cancelled
+        if (!result.cancelled) {
+          const imageUrl = await this.uploadImage(result.uri);
+          this.props.onSend({ image: imageUrl });
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  /**
+  * For taking a new image with the device's camera
+  * Asks user for permission
+  * @async
+  * @function takePhoto
+  */
+
+  takePhoto = async () => {
+    const { status } = await Permissions.askAsync(Permissions.CAMERA, Permissions.CAMERA_ROLL);
+    // Only access if user grants permission
+    try {
+      if (status === 'granted') {
+        const result = await ImagePicker.launchCameraAsync({
+          mediaTypes: 'Images',
+        }).catch((error) => console.log(error));
+        if (!result.cancelled) {
+          const imageUrl = await this.uploadImage(result.uri);
+          this.props.onSend({ image: imageUrl });
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  /**
+  * For accessing the user's location data
+  * Asks user for permission
+  * @async
+  * @function getLocation
+  */
+
+  getLocation = async () => {
+    try {
+      const { status } = await Permissions.askAsync(Permissions.LOCATION);
+      if (status === 'granted') {
+        const location = await Location.getCurrentPositionAsync({});
+        if (location) {
+          this.props.onSend({
+            location: {
+              longitude: location.coords.longitude,
+              latitude: location.coords.latitude,
+            },
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  /**
+  * Uploads image to storage as blob
+  * Manages XMLHttpRequest
+  * Defines respons type
+  * Creates file name
+  * @async
+  * @function uploadImage
+  */
+
+  uploadImage = async (uri) => {
+    const blob = await new Promise((resolve, reject) => {
+      // New XMLHttpRequest
+      const xhr = new XMLHttpRequest();
+      xhr.onload = () => {
+        resolve(xhr.response);
+      };
+      xhr.onerror = (e) => {
+        console.log(e);
+        reject(new TypeError('Network request failed'));
+      };
+      // Defines response type
+      xhr.responseType = 'blob';
+      // Opens connection + get method
+      xhr.open('GET', uri, true);
+      xhr.send(null);
+    });
+    // For creating file name
+    const uriParts = uri.split('/');
+    const imageName = uriParts[uriParts.length - 1];
+    // Referencing files
+    const ref = firebase.storage().ref().child(`${imageName}`);
+    const snapshot = await ref.put(blob);
+    // Closes connection
+    blob.close();
+    const imageUrl = await snapshot.ref.getDownloadURL();
+    return imageUrl;
+  }
+
+  /**
+  * Defines the functionality for the '+' button
+  * Tapping '+' calls actionSheet
+  * @function onActionPress
+  * @returns {actionSheet} - choose from library/take photo/send location/cancel
+  */
+
+  onActionPress = () => {
+    const options = [
+      'Choose Image From Library',
+      'Take Picture',
+      'Share Location',
+      'Cancel',
+    ];
+    const cancelButtonIndex = options.length - 1;
+    this.context.actionSheet().showActionSheetWithOptions(
+      {
+        options,
+        cancelButtonIndex,
+      },
+      async (buttonIndex) => {
+        switch (buttonIndex) {
+          case 0:
+            console.log('user wants to pick an image');
+            return this.pickImage();
+          case 1:
+            console.log('user wants to take a picture');
+            return this.takePhoto();
+          case 2:
+            console.log('user wants to get location');
+            return this.getLocation();
+          default:
+        }
+      },
+    );
+  };
+
+  render() {
+    return (
+      &lt;TouchableOpacity
+        accessible={true}
+        accessibilityLabel="Click here for more options"
+        style={[styles.container]}
+        onPress={this.onActionPress}
+      >
+        &lt;View style={[styles.wrapper, this.props.wrapperStyle]}>
+          &lt;Text style={[styles.iconText, this.props.iconTextStyle]}>
+            +
+          &lt;/Text>
+        &lt;/View>
+      &lt;/TouchableOpacity>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    width: 26,
+    height: 26,
+    marginLeft: 10,
+    marginBottom: 10,
+  },
+  wrapper: {
+    borderRadius: 13,
+    borderColor: '#b2b2b2',
+    borderWidth: 2,
+    flex: 1,
+  },
+  iconText: {
+    color: '#b2b2b2',
+    fontWeight: 'bold',
+    fontSize: 16,
+    backgroundColor: 'transparent',
+    textAlign: 'center',
+  },
+});
+
+/**
+* Creating styling
+*/
+
+CustomActions.contextTypes = {
+  actionSheet: PropTypes.func,
+};
+</code></pre>
+        </article>
+      </section>
+    </div>
+
+    <nav>
+      <h2><a href="index.html">Home</a></h2>
+      <h3>Classes</h3>
+      <ul>
+        <li><a href="Chat.html">Chat</a></li>
+        <li><a href="CustomActions.html">CustomActions</a></li>
+        <li><a href="SplashScreen.html">SplashScreen</a></li>
+      </ul>
+      <h3>Global</h3>
+      <ul>
+        <li><a href="global.html#addMessage">addMessage</a></li>
+        <li>
+          <a
+            href="global.html#componentDidMountNetInfocheckswhetheruserisonlineThensetsstateaccordinglyUsesFirebaseanonymousauthenticationSubscribesauthenticatedusertoFirestorecollectionRetrievesuser'smessagesfromFirestore"
+            >componentDidMountNetInfo checks whether user is onlineThen sets
+            state accordinglyUses Firebase anonymous authenticationSubscribes
+            authenticated user to Firestore collectionRetrieves user's messages
+            from Firestore</a
+          >
+        </li>
+        <li>
+          <a
+            href="global.html#componentWillUnmountStopslisteningtoauthenticationandcollectionchanges"
+            >componentWillUnmountStops listening to authentication and
+            collection changes</a
+          >
+        </li>
+        <li><a href="global.html#deleteMessages">deleteMessages</a></li>
+        <li><a href="global.html#getLocation">getLocation</a></li>
+        <li><a href="global.html#getMessages">getMessages</a></li>
+        <li><a href="global.html#onActionPress">onActionPress</a></li>
+        <li><a href="global.html#onCollectionUpdate">onCollectionUpdate</a></li>
+        <li><a href="global.html#onSend">onSend</a></li>
+        <li><a href="global.html#pickImage">pickImage</a></li>
+        <li><a href="global.html#renderBubble">renderBubble</a></li>
+        <li>
+          <a href="global.html#renderCustomActions">renderCustomActions</a>
+        </li>
+        <li><a href="global.html#renderCustomView">renderCustomView</a></li>
+        <li><a href="global.html#renderInputToolbar">renderInputToolbar</a></li>
+        <li><a href="global.html#saveMessages">saveMessages</a></li>
+        <li><a href="global.html#styles">styles</a></li>
+        <li><a href="global.html#takePhoto">takePhoto</a></li>
+        <li><a href="global.html#uploadImage">uploadImage</a></li>
+      </ul>
+    </nav>
+
+    <br class="clear" />
+
+    <footer>
+      Documentation generated by
+      <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Fri Sep 25
+      2020 20:17:39 GMT+0200 (Central European Summer Time)
+    </footer>
+
+    <script>
+      prettyPrint();
+    </script>
+    <script src="scripts/linenumber.js"></script>
+  </body>
+</html>

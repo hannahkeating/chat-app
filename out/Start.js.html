@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>JSDoc: Source: Start.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="styles/prettify-tomorrow.css"
+    />
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css" />
+  </head>
+
+  <body>
+    <div id="main">
+      <h1 class="page-title">Source: Start.js</h1>
+
+      <section>
+        <article>
+          <pre
+            class="prettyprint source linenums"
+          ><code>/* eslint-disable linebreak-style */
+/* eslint-disable react/prop-types */
+/* eslint-disable react/destructuring-assignment */
+/* eslint-disable no-use-before-define */
+/* eslint-disable react/jsx-filename-extension */
+/* eslint-disable linebreak-style */
+// Importing dependencies
+import React from 'react';
+import {
+  StyleSheet, View, Text, TextInput, TouchableOpacity, ImageBackground,
+  Platform, KeyboardAvoidingView,
+} from 'react-native';
+
+// Importing the background image from the assets folder
+const backgroundImage = require('../assets/Background_Image.png');
+
+// Array of background colors with HEX codes to choose from
+const backgroundColorOptions = ['#090C08', '#474056', '#8A95A5', '#B9C6AE'];
+
+/**
+* @class SplashScreen
+*@requires react
+*@requires react-native
+*/
+
+export default class SplashScreen extends React.Component {
+  constructor() {
+    super();
+
+    // Initializing the state of the app
+    this.state = {
+      name: '',
+      // Setting a default background color in case the user doesn't select one
+      backgroundColor: backgroundColorOptions[2],
+    };
+  }
+
+  render() {
+    /**
+    * User can add their name to TextInput
+    * TouchableOpacity sets the Chat background color
+    */
+
+    return (
+      // Setting background image to cover the whole screen
+      &lt;ImageBackground source={backgroundImage} style={styles.backgroundImage}>
+
+        {/* Wrapping children in a view for KeyboardAvoidingView */}
+        &lt;View style={{ flex: 1 }}>
+          {/* App title */}
+          &lt;Text style={styles.title}>
+            Hello World!
+          &lt;/Text>
+
+          {/* Login box */}
+          &lt;View style={styles.loginBox}>
+            {/* Input field for username */}
+            &lt;TextInput
+              style={styles.input}
+              // Updating username based on user's input
+              onChangeText={(name) => this.setState({ name })}
+              // Displaying user's input as it's being typed
+              value={this.state.name}
+              // Displaying what to input
+              placeholder="Your Name"
+            />
+
+            {/* Choose background color */}
+            &lt;View style={styles.chooseColorBox}>
+              &lt;Text style={styles.chooseColor}>
+                Choose Background Color:
+              &lt;/Text>
+            &lt;/View>
+
+            {/* Displaying background color options (circles) */}
+            &lt;View style={styles.backgroundColorOptions}>
+
+              &lt;TouchableOpacity
+                // Changing the background color - position: 0 from the array defined above
+                onPress={() => this.setState({ backgroundColor: backgroundColorOptions[0] })}
+                // Displaying the color (circle) itself
+                style={[styles.colorSelector, { backgroundColor: backgroundColorOptions[0] }]}
+              />
+
+              &lt;TouchableOpacity
+                // Changing the background color - position: 1 from the array defined above
+                onPress={() => this.setState({ backgroundColor: backgroundColorOptions[1] })}
+                // Displaying the color (circle) itself
+                style={[styles.colorSelector, { backgroundColor: backgroundColorOptions[1] }]}
+              />
+
+              &lt;TouchableOpacity
+                // Changing the background color - position: 2 from the array defined above
+                onPress={() => this.setState({ backgroundColor: backgroundColorOptions[2] })}
+                // Displaying the color (circle) itself
+                style={[styles.colorSelector, { backgroundColor: backgroundColorOptions[2] }]}
+              />
+
+              &lt;TouchableOpacity
+                // Changing the background color - position: 3 from the array defined above
+                onPress={() => this.setState({ backgroundColor: backgroundColorOptions[3] })}
+                // Displaying the color (circle) itself
+                style={[styles.colorSelector, { backgroundColor: backgroundColorOptions[3] }]}
+              />
+            &lt;/View>
+
+            { /* Start Chatting button */}
+            &lt;View style={styles.startButton}>
+              &lt;TouchableOpacity
+                // Navigates to Chat view when the user taps on it
+                onPress={() => this.props.navigation.navigate('Chat', {
+                  // Updates the username as per user's input
+                  user: this.state.name,
+                  // Updates the background color as per user's choice (circle)
+                  backgroundColor: this.state.backgroundColor,
+                })}
+              >
+                {/* Text on the button */}
+                &lt;Text style={styles.buttonText}>
+                  Start Chatting
+                &lt;/Text>
+              &lt;/TouchableOpacity>
+            &lt;/View>
+
+          &lt;/View>
+
+          {/* If the device OS is Android, adjust height when the keyboard pops up */}
+          {Platform.OS === 'android' ? &lt;KeyboardAvoidingView behavior="height" /> : null}
+        &lt;/View>
+      &lt;/ImageBackground>
+    );
+  }
+}
+
+/**
+* Creating styling
+*/
+
+const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
+  },
+  title: {
+    flex: 1,
+    fontSize: 45,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    alignSelf: 'center',
+    marginTop: 44,
+  },
+  loginBox: {
+    flex: 1,
+    backgroundColor: 'white',
+    height: '44%',
+    width: '88%',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginBottom: '2%',
+  },
+  input: {
+    fontSize: 16,
+    fontWeight: '300',
+    color: '#757083',
+    opacity: 50,
+    borderWidth: 1.5,
+    borderColor: '#757083',
+    borderRadius: 3,
+    width: '88%',
+    height: '21%',
+    marginBottom: '5%',
+    marginTop: '5%',
+    paddingLeft: 30,
+  },
+  chooseColorBox: {
+    alignSelf: 'flex-start',
+    flex: 1,
+    width: '88%',
+    paddingLeft: 24,
+    paddingBottom: '2%',
+  },
+  chooseColor: {
+    fontSize: 16,
+    fontWeight: '300',
+    color: '#757083',
+    opacity: 100,
+  },
+  backgroundColorOptions: {
+    flex: 4,
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    width: '80%',
+    justifyContent: 'space-around',
+    paddingLeft: 16,
+    marginTop: '2%',
+  },
+  colorSelector: {
+    position: 'relative',
+    height: 40,
+    width: 40,
+    borderRadius: 50,
+    margin: 2,
+    borderColor: 'white',
+  },
+  startButton: {
+    backgroundColor: '#757083',
+    alignItems: 'center',
+    width: '88%',
+    height: '18%',
+    marginBottom: '5%',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 16,
+  },
+});
+</code></pre>
+        </article>
+      </section>
+    </div>
+
+    <nav>
+      <h2><a href="index.html">Home</a></h2>
+      <h3>Classes</h3>
+      <ul>
+        <li><a href="Chat.html">Chat</a></li>
+        <li><a href="CustomActions.html">CustomActions</a></li>
+        <li><a href="SplashScreen.html">SplashScreen</a></li>
+      </ul>
+      <h3>Global</h3>
+      <ul>
+        <li><a href="global.html#addMessage">addMessage</a></li>
+        <li>
+          <a
+            href="global.html#componentDidMountNetInfocheckswhetheruserisonlineThensetsstateaccordinglyUsesFirebaseanonymousauthenticationSubscribesauthenticatedusertoFirestorecollectionRetrievesuser'smessagesfromFirestore"
+            >componentDidMountNetInfo checks whether user is onlineThen sets
+            state accordinglyUses Firebase anonymous authenticationSubscribes
+            authenticated user to Firestore collectionRetrieves user's messages
+            from Firestore</a
+          >
+        </li>
+        <li>
+          <a
+            href="global.html#componentWillUnmountStopslisteningtoauthenticationandcollectionchanges"
+            >componentWillUnmountStops listening to authentication and
+            collection changes</a
+          >
+        </li>
+        <li><a href="global.html#deleteMessages">deleteMessages</a></li>
+        <li><a href="global.html#getLocation">getLocation</a></li>
+        <li><a href="global.html#getMessages">getMessages</a></li>
+        <li><a href="global.html#onActionPress">onActionPress</a></li>
+        <li><a href="global.html#onCollectionUpdate">onCollectionUpdate</a></li>
+        <li><a href="global.html#onSend">onSend</a></li>
+        <li><a href="global.html#pickImage">pickImage</a></li>
+        <li><a href="global.html#renderBubble">renderBubble</a></li>
+        <li>
+          <a href="global.html#renderCustomActions">renderCustomActions</a>
+        </li>
+        <li><a href="global.html#renderCustomView">renderCustomView</a></li>
+        <li><a href="global.html#renderInputToolbar">renderInputToolbar</a></li>
+        <li><a href="global.html#saveMessages">saveMessages</a></li>
+        <li><a href="global.html#styles">styles</a></li>
+        <li><a href="global.html#takePhoto">takePhoto</a></li>
+        <li><a href="global.html#uploadImage">uploadImage</a></li>
+      </ul>
+    </nav>
+
+    <br class="clear" />
+
+    <footer>
+      Documentation generated by
+      <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Fri Sep 25
+      2020 20:17:39 GMT+0200 (Central European Summer Time)
+    </footer>
+
+    <script>
+      prettyPrint();
+    </script>
+    <script src="scripts/linenumber.js"></script>
+  </body>
+</html>
