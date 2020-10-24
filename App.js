@@ -8,10 +8,6 @@ import "react-native-gesture-handler";
 // Importing React Navigation
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import * as ImagePicker from "expo-image-picker";
-import * as Permissions from "expo-permissions";
-import * as Location from "expo-location";
-import MapView from "react-native-maps";
 
 const firebase = require("firebase");
 require("firebase/firestore");
